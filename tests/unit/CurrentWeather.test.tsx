@@ -29,7 +29,7 @@ describe('CurrentWeather', () => {
     expect(screen.getByRole('region', { name: 'Clima atual' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'São Paulo' })).toBeInTheDocument();
     expect(screen.getByText('20°')).toBeInTheDocument();
-    expect(screen.getByText('°C')).toBeInTheDocument();
+    expect(screen.getByText('C')).toBeInTheDocument();
     expect(screen.getByText('Parcialmente nublado')).toBeInTheDocument();
     expect(screen.getByText('70%')).toBeInTheDocument();
     expect(screen.getByText('12 km/h')).toBeInTheDocument();

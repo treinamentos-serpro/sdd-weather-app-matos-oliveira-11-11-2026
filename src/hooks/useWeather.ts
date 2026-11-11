@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { City, WeatherData } from '../types/weather';
 import { getWeather, searchCities, WeatherServiceError } from '../services/weatherService';
+import type { City, WeatherData } from '../types/weather';
 
 export type WeatherStatus = 'idle' | 'loading' | 'success' | 'error' | 'empty';
 
@@ -27,31 +27,6 @@ export function useWeather(): UseWeatherResult {
   const [query, setQuery] = useState('');
   const [lastCity, setLastCity] = useState<City | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: search inicia o fluxo na montagem; loadWeather é estável
-  const search = useCallback(async (name: string) => {
-    const trimmed = name.trim();
-    setQuery(trimmed);
-    if (!trimmed) return;
-
-    setStatus('loading');
-    setError(null);
-    setCities([]);
-    try {
-      const results = await searchCities(trimmed);
-      if (results.length === 0) {
-        setStatus('empty');
-        return;
-      }
-      // Seleciona automaticamente a primeira correspondência, mas mantém a
-      // lista para o usuário trocar.
-      setCities(results);
-      await loadWeather(results[0]);
-    } catch (err) {
-      setStatus('error');
-      setError(toMessage(err));
-    }
-  }, []);
-
   const loadWeather = useCallback(async (city: City) => {
     setStatus('loading');
     setError(null);
@@ -65,6 +40,35 @@ export function useWeather(): UseWeatherResult {
       setError(toMessage(err));
     }
   }, []);
+
+  const search = useCallback(
+    async (name: string) => {
+      const trimmed = name.trim();
+      setQuery(trimmed);
+      if (!trimmed) return;
+
+      setStatus('loading');
+      setError(null);
+      setCities([]);
+      // Sem cidade vigente, retry refaz a busca em vez de recarregar o clima antigo.
+      setLastCity(null);
+      try {
+        const results = await searchCities(trimmed);
+        if (results.length === 0) {
+          setStatus('empty');
+          return;
+        }
+        // Seleciona automaticamente a primeira correspondência, mas mantém a
+        // lista para o usuário trocar.
+        setCities(results);
+        await loadWeather(results[0]);
+      } catch (err) {
+        setStatus('error');
+        setError(toMessage(err));
+      }
+    },
+    [loadWeather],
+  );
 
   const selectCity = useCallback(
     async (city: City) => {

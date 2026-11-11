@@ -13,16 +13,16 @@ export class WeatherServiceError extends Error {
 }
 
 /** Faz um fetch com timeout via AbortController. */
-async function fetchWithTimeout(url: string): Promise<Response> {
+export async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
     return await fetch(url, { signal: controller.signal });
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new WeatherServiceError('A requisição demorou demais. Tente novamente.');
+      throw new WeatherServiceError('A requisição demorou demais.');
     }
-    throw new WeatherServiceError('Falha de rede. Verifique sua conexão.');
+    throw new WeatherServiceError('Falha de rede.');
   } finally {
     clearTimeout(timeout);
   }

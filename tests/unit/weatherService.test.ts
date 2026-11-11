@@ -1,5 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { searchCities, getWeather, WeatherServiceError } from '../../src/services/weatherService';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  fetchWithTimeout,
+  getWeather,
+  searchCities,
+  WeatherServiceError,
+} from '../../src/services/weatherService';
 import type { City } from '../../src/types/weather';
 
 const CITY: City = {
@@ -24,6 +29,39 @@ describe('weatherService', () => {
   });
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  describe('fetchWithTimeout', () => {
+    it('converte timeout em WeatherServiceError e limpa o timer', async () => {
+      vi.useFakeTimers();
+      const clearSpy = vi.spyOn(globalThis, 'clearTimeout');
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(
+          (_url: string, init: RequestInit) =>
+            new Promise((_resolve, reject) => {
+              init.signal?.addEventListener('abort', () =>
+                reject(new DOMException('aborted', 'AbortError')),
+              );
+            }),
+        ),
+      );
+
+      const assertion = expect(fetchWithTimeout('https://example.test')).rejects.toThrow(
+        'A requisição demorou demais.',
+      );
+      await vi.advanceTimersByTimeAsync(10_000);
+      await assertion;
+      expect(clearSpy).toHaveBeenCalled();
+      vi.useRealTimers();
+    });
+
+    it('converte falha de rede em WeatherServiceError', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+      const promise = fetchWithTimeout('https://example.test');
+      await expect(promise).rejects.toBeInstanceOf(WeatherServiceError);
+      await expect(promise).rejects.toThrow('Falha de rede.');
+    });
   });
 
   describe('searchCities', () => {
