@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 const geocoding = {
   results: [
@@ -67,10 +67,18 @@ test('estado vazio quando a cidade não existe', async ({ page }) => {
 
 test('viewport mobile renderiza o fluxo principal', async ({ page }) => {
   await mockApis(page);
-  await page.setViewportSize({ width: 375, height: 812 });
+  await page.setViewportSize({ width: 320, height: 812 });
   await page.goto('/');
 
   await page.getByLabel(/buscar cidade/i).fill('Seattle');
   await page.getByRole('button', { name: /buscar/i }).click();
   await expect(page.getByRole('heading', { name: 'Seattle' })).toBeVisible();
+
+  for (const width of [320, 375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const fitsViewport = await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    );
+    expect(fitsViewport, `sem rolagem horizontal em ${width}px`).toBe(true);
+  }
 });

@@ -45,3 +45,117 @@ export interface WeatherData {
   current: CurrentWeather;
   forecast: ForecastDay[];
 }
+
+export namespace WeatherDomain {
+  export type Unit = 'celsius' | 'fahrenheit';
+  export type Instant = number;
+  export type CalendarDate = string;
+  export type Measurement = number | null;
+
+  export interface Coordinates {
+    latitude: number;
+    longitude: number;
+  }
+
+  export interface City extends Coordinates {
+    id: number;
+    name: string;
+    country: string | null;
+    region: string | null;
+  }
+
+  export interface CityCandidate {
+    city: City | null;
+    label: string;
+    selectable: boolean;
+    reason: 'invalid-position' | 'ambiguous' | null;
+  }
+
+  export type SelectedLocation =
+    | { kind: 'manual'; city: City }
+    | { kind: 'device'; coordinates: Coordinates; label: 'Localização atual' };
+
+  export interface CurrentWeather {
+    temperatureC: Measurement;
+    apparentTemperatureC: Measurement;
+    weatherCode: number | null;
+    humidityPercent: Measurement;
+    windSpeedKmh: Measurement;
+    referenceAt: Instant | null;
+  }
+
+  export interface ForecastHour {
+    at: Instant;
+    temperatureC: Measurement;
+    weatherCode: number | null;
+    precipitationProbabilityPercent: Measurement;
+  }
+
+  export interface ForecastDay {
+    date: CalendarDate;
+    minC: Measurement;
+    maxC: Measurement;
+    weatherCode: number | null;
+    maxPrecipitationProbabilityPercent: Measurement;
+    hours: ForecastHour[];
+    hourlyCoverage: 'complete' | 'partial' | 'unavailable';
+  }
+
+  export interface WeatherData {
+    location: SelectedLocation;
+    timezone: 'America/Sao_Paulo';
+    receivedAt: Instant;
+    current: CurrentWeather | null;
+    forecast: ForecastDay[];
+    completeness: 'complete' | 'partial';
+  }
+
+  export type Freshness = 'recent' | 'older-than-60-minutes' | 'unverifiable';
+
+  export interface Preferences {
+    unit: Unit;
+    city: City | null;
+  }
+
+  export type ErrorCode =
+    | 'invalid-input'
+    | 'network'
+    | 'timeout'
+    | 'rate-limit'
+    | 'provider'
+    | 'invalid-data'
+    | 'permission-denied'
+    | 'position-unavailable'
+    | 'unsupported'
+    | 'storage-unavailable';
+
+  export interface AppError {
+    code: ErrorCode;
+    retryable: boolean;
+    httpStatus?: number;
+  }
+
+  export interface WeatherService {
+    searchCities(query: string, signal: AbortSignal): Promise<CityCandidate[]>;
+    getWeather(location: SelectedLocation, signal: AbortSignal): Promise<WeatherData>;
+  }
+
+  export interface PreferencesService {
+    read(): Preferences;
+    writeUnit(unit: Unit): boolean;
+    writeCity(city: City): boolean;
+    clear(): boolean;
+  }
+
+  export interface GeolocationService {
+    requestPosition(signal: AbortSignal): Promise<Coordinates>;
+  }
+
+  export interface DiagnosticEvent {
+    category: ErrorCode;
+    operation: 'search' | 'forecast' | 'location' | 'preferences';
+    httpStatus?: number;
+    durationMs: number;
+    at: Instant;
+  }
+}

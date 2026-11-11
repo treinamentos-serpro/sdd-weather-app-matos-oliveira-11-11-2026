@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 
 interface SearchBarProps {
   onSearch: (city: string) => void;
@@ -12,13 +12,13 @@ export default function SearchBar({ onSearch, disabled }: SearchBarProps) {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = value.trim();
-    if (!trimmed) return;
+    if (disabled || !trimmed) return;
     onSearch(trimmed);
   }
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="w-full max-w-md">
-      <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md focus-within:border-accent-500">
+    <form role="search" onSubmit={handleSubmit} className="w-full min-w-0 sm:max-w-md">
+      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md focus-within:border-accent-500 focus-within:ring-2 focus-within:ring-accent-400">
         <span aria-hidden="true" className="text-white/50">
           🔍
         </span>
@@ -29,15 +29,16 @@ export default function SearchBar({ onSearch, disabled }: SearchBarProps) {
           id="city-search"
           type="text"
           value={value}
+          disabled={disabled}
           onChange={(e) => setValue(e.target.value)}
           placeholder="Buscar cidade…"
           autoComplete="off"
-          className="flex-1 bg-transparent text-white placeholder-white/40 outline-none"
+          className="min-w-0 flex-1 bg-transparent text-white placeholder-white/60 outline-none disabled:cursor-not-allowed disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="rounded-lg bg-accent-500 px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-accent-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-accent-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400 sm:px-4 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Buscar
         </button>

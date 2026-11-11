@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect } from 'vitest';
 import { useState } from 'react';
-import UnitToggle from '../../src/components/UnitToggle';
+import { describe, expect, it } from 'vitest';
 import CurrentWeather from '../../src/components/CurrentWeather';
+import UnitToggle from '../../src/components/UnitToggle';
 import type { City, CurrentWeather as CurrentWeatherType, Unit } from '../../src/types/weather';
 
 const city: City = {
@@ -46,6 +46,32 @@ describe('UnitToggle + CurrentWeather', () => {
 
   it('expõe os botões com estado pressionado acessível', () => {
     render(<Harness />);
+    expect(screen.getByRole('group', { name: 'Unidade de temperatura' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '°C' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: '°F' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('navega entre unidades com setas, Home e End', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    const celsiusButton = screen.getByRole('button', { name: '°C' });
+    const fahrenheitButton = screen.getByRole('button', { name: '°F' });
+
+    celsiusButton.focus();
+    await user.keyboard('{ArrowRight}');
+    expect(fahrenheitButton).toHaveFocus();
+    expect(fahrenheitButton).toHaveAttribute('aria-pressed', 'true');
+
+    await user.keyboard('{ArrowRight}');
+    expect(celsiusButton).toHaveFocus();
+    expect(celsiusButton).toHaveAttribute('aria-pressed', 'true');
+
+    await user.keyboard('{End}');
+    expect(fahrenheitButton).toHaveFocus();
+    expect(fahrenheitButton).toHaveAttribute('aria-pressed', 'true');
+
+    await user.keyboard('{Home}');
+    expect(celsiusButton).toHaveFocus();
+    expect(celsiusButton).toHaveAttribute('aria-pressed', 'true');
   });
 });
