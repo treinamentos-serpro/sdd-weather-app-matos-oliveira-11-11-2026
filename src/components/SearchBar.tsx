@@ -17,7 +17,12 @@ export default function SearchBar({ onSearch, disabled }: SearchBarProps) {
   }
 
   return (
-    <form role="search" onSubmit={handleSubmit} className="w-full min-w-0 sm:max-w-md">
+    <form
+      role="search"
+      aria-busy={disabled}
+      onSubmit={handleSubmit}
+      className="w-full min-w-0 sm:max-w-md"
+    >
       <div className="flex min-w-0 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md focus-within:border-accent-500 focus-within:ring-2 focus-within:ring-accent-400">
         <span aria-hidden="true" className="text-white/50">
           🔍
@@ -38,7 +43,7 @@ export default function SearchBar({ onSearch, disabled }: SearchBarProps) {
         <button
           type="submit"
           disabled={disabled || !value.trim()}
-          className="rounded-lg bg-accent-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400 sm:px-4 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-accent-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:brightness-95 active:brightness-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400 sm:px-4 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 disabled:active:brightness-100"
         >
           Buscar
         </button>

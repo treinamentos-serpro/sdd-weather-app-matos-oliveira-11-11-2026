@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { formatTemperature, unitLabel } from '../lib/temperature';
 import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCodes';
 import type { City, CurrentWeather as CurrentWeatherType, Unit } from '../types/weather';
@@ -30,9 +31,19 @@ function Metric({ icon, label, value }: MetricProps) {
   );
 }
 
+function formatMetric(value: number | null, suffix: string, decimals = 0): string {
+  if (value === null || !Number.isFinite(value)) return '—';
+  return `${decimals === 0 ? Math.round(value) : value.toFixed(decimals)}${suffix}`;
+}
+
 /** Seção "hero" com as condições atuais da cidade selecionada. */
 export default function CurrentWeather({ city, current, unit }: CurrentWeatherProps) {
+  const cityHeadingRef = useRef<HTMLHeadingElement>(null);
   const location = [city.admin1, city.country].filter(Boolean).join(', ');
+
+  useEffect(() => {
+    cityHeadingRef.current?.focus();
+  }, []);
 
   return (
     <section
@@ -41,7 +52,11 @@ export default function CurrentWeather({ city, current, unit }: CurrentWeatherPr
     >
       <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <h2 className="break-words text-2xl font-bold md:text-3xl">
+          <h2
+            ref={cityHeadingRef}
+            tabIndex={-1}
+            className="break-words text-2xl font-bold outline-none focus:outline focus:outline-2 focus:outline-offset-4 focus:outline-accent-400 md:text-3xl"
+          >
             {city.name}
           </h2>
           {location && <p className="text-white/70">{location}</p>}
@@ -63,10 +78,14 @@ export default function CurrentWeather({ city, current, unit }: CurrentWeatherPr
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Metric icon="💧" label="Umidade" value={`${Math.round(current.humidity)}%`} />
-          <Metric icon="💨" label="Vento" value={`${Math.round(current.windSpeed)} km/h`} />
-          <Metric icon="🌧️" label="Precipitação" value={`${current.precipitation} mm`} />
-          <Metric icon="📊" label="Pressão" value={`${Math.round(current.pressure)} hPa`} />
+          <Metric icon="💧" label="Umidade" value={formatMetric(current.humidity, '%')} />
+          <Metric icon="💨" label="Vento" value={formatMetric(current.windSpeed, ' km/h')} />
+          <Metric
+            icon="🌧️"
+            label="Precipitação"
+            value={formatMetric(current.precipitation, ' mm', 1)}
+          />
+          <Metric icon="📊" label="Pressão" value={formatMetric(current.pressure, ' hPa')} />
         </div>
       </div>
     </section>

@@ -4,7 +4,15 @@ import { describe, expect, it, vi } from 'vitest';
 import SearchBar from '../../src/components/SearchBar';
 
 describe('SearchBar', () => {
-  it('não dispara busca com input vazio', async () => {
+  it('não dispara busca com input literalmente vazio', () => {
+    const onSearch = vi.fn();
+    render(<SearchBar onSearch={onSearch} />);
+    expect(screen.getByRole('button', { name: /buscar/i })).toBeDisabled();
+    fireEvent.submit(screen.getByRole('search'));
+    expect(onSearch).not.toHaveBeenCalled();
+  });
+
+  it('não dispara busca quando o input contém somente espaços', async () => {
     const onSearch = vi.fn();
     render(<SearchBar onSearch={onSearch} />);
     await userEvent.type(screen.getByRole('textbox', { name: /buscar cidade/i }), '   ');
@@ -30,6 +38,7 @@ describe('SearchBar', () => {
     rerender(<SearchBar onSearch={onSearch} disabled />);
     expect(input).toBeDisabled();
     expect(screen.getByRole('button', { name: /buscar/i })).toBeDisabled();
+    expect(screen.getByRole('search')).toHaveAttribute('aria-busy', 'true');
     fireEvent.submit(screen.getByRole('search'));
     expect(onSearch).not.toHaveBeenCalled();
   });

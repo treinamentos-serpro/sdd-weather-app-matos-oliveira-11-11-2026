@@ -2,8 +2,8 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../../src/App';
-import { getWeather, searchCities, WeatherServiceError } from '../../src/services/weatherService';
 import { mockWeatherData } from '../../src/mock/weather';
+import { getWeather, searchCities, WeatherServiceError } from '../../src/services/weatherService';
 
 vi.mock('../../src/services/weatherService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../src/services/weatherService')>()),
@@ -44,6 +44,7 @@ describe('App', () => {
     const user = await searchFor('São Paulo');
 
     expect(await screen.findByRole('heading', { name: 'São Paulo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'São Paulo' })).toHaveFocus();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(screen.getByText('24°')).toBeInTheDocument();
 
