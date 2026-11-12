@@ -5,7 +5,8 @@ A automação de deploy já está pronta no repositório.
 ## Como funciona
 
 O workflow [`.github/workflows/pages.yml`](../../.github/workflows/pages.yml)
-dispara em push para `main`:
+dispara após uma execução bem-sucedida do workflow `CI` na `main`, ou por
+`workflow_dispatch`:
 
 1. **Build do app** com `VITE_BASE=/${{ github.event.repository.name }}/app/` —
    garante que os assets apontem para o subcaminho correto do Pages.
@@ -13,7 +14,9 @@ dispara em push para `main`:
    - `docs/*` → raiz (site do workshop),
    - `dist/*` → `/app/` (app buildado),
    - `workshop/*` → `/workshop/` (markdown que o site renderiza).
-3. **Publicação** via `actions/upload-pages-artifact` + `actions/deploy-pages`.
+3. **Verificação e publicação:** o workflow confirma que o `_site` contém o
+   site, o app, o workshop e os bundles com o prefixo correto; depois publica
+   via `actions/upload-pages-artifact` + `actions/deploy-pages`.
 
 ## O `base` configurável
 
@@ -38,7 +41,8 @@ pnpm preview
 ## Configuração do repositório (uma vez)
 
 - **Settings → Pages → Source: GitHub Actions.**
-- Permissões já declaradas no workflow (`pages: write`, `id-token: write`).
+- Permissões declaradas por job: leitura do conteúdo e configuração do Pages no
+   build; `pages: write` e `id-token: write` somente no deploy.
 
 ## URLs finais
 
