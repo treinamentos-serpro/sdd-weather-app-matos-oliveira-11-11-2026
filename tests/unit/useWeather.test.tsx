@@ -10,7 +10,13 @@ vi.mock('../../src/services/weatherService', async (importOriginal) => ({
   getWeather: vi.fn(),
 }));
 
-const lisboa: City = { id: 1, name: 'Lisboa', country: 'Portugal', latitude: 38.7, longitude: -9.1 };
+const lisboa: City = {
+  id: 1,
+  name: 'Lisboa',
+  country: 'Portugal',
+  latitude: 38.7,
+  longitude: -9.1,
+};
 const porto: City = { id: 2, name: 'Porto', country: 'Portugal', latitude: 41.1, longitude: -8.6 };
 
 function weatherFor(city: City): WeatherData {
@@ -102,13 +108,30 @@ describe('useWeather', () => {
     expect(result.current.data?.city).toEqual(lisboa);
   });
 
+  it('mostra mensagem amigável offline na busca e retry repete a busca', async () => {
+    vi.mocked(searchCities).mockRejectedValueOnce(new WeatherServiceError('Falha de rede.'));
+    const { result } = renderHook(() => useWeather());
+
+    await act(() => result.current.search('Lisboa'));
+    expect(result.current.status).toBe('error');
+    expect(result.current.error).toBe('Falha de rede.');
+
+    vi.mocked(searchCities).mockResolvedValue([lisboa]);
+    vi.mocked(getWeather).mockResolvedValue(weatherFor(lisboa));
+    await act(() => result.current.retry());
+
+    expect(searchCities).toHaveBeenLastCalledWith('Lisboa');
+    expect(result.current.status).toBe('success');
+    expect(result.current.error).toBeNull();
+  });
+
   it('retry recarrega o clima da última cidade quando a previsão falhou', async () => {
     vi.mocked(searchCities).mockResolvedValue([lisboa]);
-    vi.mocked(getWeather).mockRejectedValueOnce(new Error('boom'));
+    vi.mocked(getWeather).mockRejectedValueOnce(new WeatherServiceError('Falha de rede.'));
     const { result } = renderHook(() => useWeather());
     await act(() => result.current.search('Lisboa'));
     expect(result.current.status).toBe('error');
-    expect(result.current.error).toBe('Algo deu errado. Tente novamente.');
+    expect(result.current.error).toBe('Falha de rede.');
 
     vi.mocked(getWeather).mockResolvedValue(weatherFor(lisboa));
     await act(() => result.current.retry());

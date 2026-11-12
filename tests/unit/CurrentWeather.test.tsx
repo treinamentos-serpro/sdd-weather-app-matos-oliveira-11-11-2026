@@ -50,4 +50,27 @@ describe('CurrentWeather', () => {
     expect(screen.getByText(temperature)).toBeInTheDocument();
     expect(screen.getByText(label)).toBeInTheDocument();
   });
+
+  it('apresenta campos atuais ausentes sem exibir null, undefined ou NaN', () => {
+    render(
+      <CurrentWeather
+        city={city}
+        current={{
+          ...current,
+          temperature: null,
+          weatherCode: null,
+          humidity: null,
+          windSpeed: Number.NaN,
+          precipitation: null,
+          pressure: null,
+          time: null,
+        }}
+        unit="celsius"
+      />,
+    );
+
+    expect(screen.getAllByText('—')).toHaveLength(5);
+    expect(screen.getByText('Condição desconhecida')).toBeInTheDocument();
+    expect(screen.queryByText(/null|undefined|NaN/i)).not.toBeInTheDocument();
+  });
 });

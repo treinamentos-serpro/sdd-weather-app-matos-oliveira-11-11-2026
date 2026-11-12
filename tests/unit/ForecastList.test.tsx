@@ -67,4 +67,40 @@ describe('ForecastList', () => {
     expect(renderCards()[4].getByText('75°')).toBeInTheDocument();
     expect(renderCards()[4].getByText('57°')).toBeInTheDocument();
   });
+
+  it('distingue probabilidade ausente de zero válido', () => {
+    const partialForecast = forecast.map((day, index) => ({
+      ...day,
+      precipitationProbability: index === 0 ? null : index === 1 ? 0 : day.precipitationProbability,
+    }));
+    render(<ForecastList forecast={partialForecast} unit="celsius" />);
+
+    const cards = screen.getAllByRole('listitem');
+    expect(within(cards[0]).getByText('Indisponível')).toBeInTheDocument();
+    expect(within(cards[1]).getByText('0%')).toBeInTheDocument();
+  });
+
+  it('renderiza fallbacks para data e temperaturas ausentes ou inválidas', () => {
+    render(
+      <ForecastList
+        forecast={[
+          {
+            date: null,
+            min: null,
+            max: Number.NaN,
+            weatherCode: null,
+            precipitationProbability: null,
+          },
+        ]}
+        unit="celsius"
+      />,
+    );
+
+    const card = within(screen.getByRole('listitem'));
+    expect(card.getByText('Data indisponível')).toBeInTheDocument();
+    expect(card.getAllByText('—')).toHaveLength(3);
+    expect(card.getByRole('img', { name: 'Condição desconhecida' })).toBeInTheDocument();
+    expect(card.getByText('Indisponível')).toBeInTheDocument();
+    expect(card.queryByText(/null|undefined|NaN/i)).not.toBeInTheDocument();
+  });
 });

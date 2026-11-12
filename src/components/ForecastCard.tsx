@@ -41,7 +41,9 @@ export default function ForecastCard({ day, index, unit }: ForecastCardProps) {
         <span role="img" aria-label="Probabilidade de chuva">
           💧
         </span>{' '}
-        {day.precipitationProbability}%
+        {day.precipitationProbability === null || !Number.isFinite(day.precipitationProbability)
+          ? 'Indisponível'
+          : `${day.precipitationProbability}%`}
       </p>
     </li>
   );

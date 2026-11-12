@@ -38,10 +38,11 @@ function Harness() {
 describe('UnitToggle + CurrentWeather', () => {
   it('converte a temperatura ao alternar a unidade', async () => {
     render(<Harness />);
-    expect(screen.getByText('0°')).toBeInTheDocument();
+    const weatherRegion = screen.getByRole('region', { name: 'Clima atual' });
+    expect(weatherRegion).toHaveTextContent('0°C');
 
     await userEvent.click(screen.getByRole('button', { name: '°F' }));
-    expect(screen.getByText('32°')).toBeInTheDocument();
+    expect(weatherRegion).toHaveTextContent('32°F');
   });
 
   it('expõe os botões com estado pressionado acessível', () => {
